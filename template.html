@@ -1,0 +1,136 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <style>
+        table {
+            width: 100%;
+            text-align: left;
+        }
+        
+        td {
+            vertical-align: text-top;
+        }
+
+        blockquote {
+            width: 95%;
+            border-left: 4px solid #929596;
+            margin: 1em 0 1em .5em;
+            padding-left: 30px;
+        }
+
+        .message-content {
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            vertical-align: text-top;
+            font-family: ciscosansttregular,Helvetica Neue,Arial;
+            font-size: 16px;
+        }
+
+        .message-metadata {
+            font-size: 14px;
+            font-family: CiscoSansTT Regular,Helvetica Neue,Arial;
+            line-height: 22px;
+            text-align: left;
+            color: #535759;
+            word-wrap: break-word;
+        }
+
+        spark-mention[data-object-type = "person"] {
+            color: #929596;
+        }
+
+        .spark-contact {
+            color: #929596;
+        }
+
+        spark-mention[data-group-type="all"] {
+            color: #0ac391;
+        }
+
+        @font-face {
+            font-family: 'ciscosansttbold';
+            src: url('ciscosansttbold-webfont.woff2') format('woff2'),
+                url('ciscosansttbold-webfont.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'ciscosansttlight';
+            src: url('ciscosansttlight-webfont.woff2') format('woff2'),
+                url('ciscosansttlight-webfont.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'ciscosansttregular';
+            src: url('ciscosansttregular-webfont.woff2') format('woff2'),
+                url('ciscosansttregular-webfont.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+    </style>
+    <title>Webex Teams Activity Report</title>
+</head>
+
+<body>
+    <div class="center-text">
+        <p>
+            <h1>Webex Teams Activity Report: ({{ startDate }} - {{ endDate }})</h1>
+        </p>
+    </div>
+
+    # macro roomIntro( name )
+        <h2>{{ name }}</h2>
+        <hr>
+        <table>
+            <colgroup>
+                <col span="1" style="width: 10%;">
+                <col span="1" style="width: 10%;">
+                <col span="1" style="width: 80%;">
+            </colgroup>
+            <tr>
+                <th>Time</th>
+                <th>From</th>
+                <th>Message</th>
+            </tr>
+    # endmacro 
+    
+    # for row in rows: 
+    
+        # if loop.changed( row[ 0 ] ) 
+        
+            # if not loop.first
+
+                </table>
+
+            # endif 
+            
+        {{ roomIntro( row[ 0 ] ) }} 
+
+        # endif
+
+        <tr>
+            <td class = "message-metadata">{{ renderShortDate( row[ 1 ] ) }}</td>
+            <td class = "message-metadata">{{ renderName( row[ 6 ], row[ 11 ] ) }}</td>
+            <td>
+                <div>
+                    <div>
+                        <div class = "message-content">{{ renderText( row[ 6 ], row[ 5 ], row[ 8 ] ) }}</div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+
+        # if loop.last
+
+            </table>
+
+        # endif 
+    
+    # endfor
+</body>
+
+</html>

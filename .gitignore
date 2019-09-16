@@ -1,0 +1,5 @@
+.vscode/*
+!.vscode/launch.json
+__pycache__/
+messages.db
+report.html
