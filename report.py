@@ -144,7 +144,7 @@ def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
             renderText = renderText
         )
 
-    with open( 'report.html', 'w' ) as outfile:
+    with open( 'report.html', 'w', encoding = 'utf-8' ) as outfile:
 
         outfile.write( html )
 
