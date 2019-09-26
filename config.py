@@ -1,6 +1,7 @@
 # Optional settings
 
 # Modify the 3 values below if you don't want to be prompted each time
+# Date format: YYYY-MM-DD, e.g. 2019-09-01
 teamsAccessToken = 'changeme'
 startDate = 'changeme'
 endDate = 'changeme'
