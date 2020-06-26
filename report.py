@@ -22,6 +22,7 @@ import sqlite3
 import webbrowser
 from datetime import datetime, timedelta, timezone
 from tzlocal import get_localzone
+import pytz
 from webexteamssdk import WebexTeamsAPI
 
 def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
@@ -36,15 +37,21 @@ def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
 
     def renderName( id, displayName ):
 
-        return '<b>Me</b>' if id == teamsId else displayName
+        return '<b>You</b>' if id == teamsId else displayName
 
-    def renderText( id, text, html):
+    def renderText( id, text, html, parentId ):
+
+        cssClass = 'activity-item--message'
+
+        cssClass = cssClass if parentId is None else 'activity-item activity-threading-reply ' + cssClass
+
+        cssClass = cssClass if id != teamsId else cssClass + ' message-mine'
 
         text = text if text is not None else ''
 
         text = html if html is not None else text
 
-        return f'<b>{ text }</b>' if id == teamsId else text
+        return f'<td class="{ cssClass}"><div class="message-cell">{ text }</div></td>'
 
     def renderShortDate( timeStr ):
 
@@ -59,15 +66,18 @@ def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
         resp = c.execute(
             '''CREATE TABLE people (
                 id text, 
-                displayName text)'''
+                displayName text,
+                avatar text)'''
             )
 
         conn.commit
 
-    startTime = localTimeZone.localize( datetime.strptime( startDate, '%Y-%m-%d' ) ).strftime( '%Y-%m-%dT%H:%M:%S.%f%z' )
-    endTime = localTimeZone.localize( datetime.strptime( endDate, '%Y-%m-%d' ) + timedelta( days = 1 ) ).strftime( '%Y-%m-%dT%H:%M:%S.%f%z' )
-
-    sqlMentioningMe = f'mentionedPeople like "%{ teamsId }" OR' if criteria[ 'mentioningMe' ] else ''
+    startTime = localTimeZone.localize( datetime.strptime( startDate, '%Y-%m-%d' ) )
+    startTime = startTime.astimezone( pytz.timezone( 'UTC' ) ).strftime( '%Y-%m-%dT%H:%M:%S.%f%z' )
+    endTime = localTimeZone.localize( datetime.strptime( endDate, '%Y-%m-%d' ) + timedelta( days = 1 ) )
+    endTime = endTime.astimezone( pytz.timezone( 'UTC' ) ).strftime( '%Y-%m-%dT%H:%M:%S.%f%z' )
+    
+    sqlMentioningMe = f'mentionedPeople like "%{ teamsId }%" OR' if criteria[ 'mentioningMe' ] else ''
     sqlMentioningAll = 'mentionedGroups = \'["all"]\' OR' if criteria[ 'mentioningAll' ] else ''
     sqlDirectMessage = 'roomType = "direct" OR' if criteria[ 'directMessage' ] else ''
     sqlPersonId = f'personId = "{ teamsId }"'
@@ -95,25 +105,29 @@ def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
     for row in rows:
 
         personId = row[ 0 ]
-        personName = '(Unknown)'
 
         try:
             person = api.people.get( personId )
-            personName = person.displayName
+
         except:
-            pass
+            person = {
+                'id': personId,
+                'displayName': 'Unknown',
+                'avatar': ''
+            }
 
         data.append( (
-            personId,
-            personName
+            person.id,
+            person.displayName,
+            person.avatar
         ) )
 
-    c.executemany( 'INSERT INTO people VALUES (?,?)', data )
+    c.executemany( 'INSERT INTO people VALUES (?,?,?)', data )
 
     conn.commit()
 
     query = f'''
-    SELECT messages.*, people.displayName
+    SELECT messages.*, people.displayName, people.avatar
     FROM messages LEFT OUTER JOIN people
     ON messages.personId = people.id
     WHERE
@@ -126,7 +140,7 @@ def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
             { sqlDirectMessage }
             { sqlPersonId }
         )
-    ORDER BY messages.roomId, messages.created
+    ORDER BY messages.roomId, messages.threadCreated, messages.created
     '''
 
     rows = c.execute( query )
@@ -144,8 +158,8 @@ def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
             renderText = renderText
         )
 
-    with open( 'report.html', 'w', encoding = 'utf-8' ) as outfile:
+    with open( 'www/report.html', 'w', encoding = 'utf-8' ) as outfile:
 
         outfile.write( html )
 
-    webbrowser.open( 'report.html' )
+    webbrowser.open( 'www/report.html' )

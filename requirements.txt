@@ -1,3 +1,14 @@
-webexteamssdk==1.0.3
-tzlocal==2.0.0
-Jinja2==2.10.1
+certifi==2020.6.20
+chardet==3.0.4
+future==0.18.2
+idna==2.9
+Jinja2==2.11.2
+MarkupSafe==1.1.1
+PyJWT==1.7.1
+python-dotenv==0.13.0
+pytz==2020.1
+requests==2.24.0
+requests-toolbelt==0.9.1
+tzlocal==2.1
+urllib3==1.25.9
+webexteamssdk==1.3

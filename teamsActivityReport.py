@@ -21,25 +21,26 @@ import sqlite3
 
 import data
 import report
-import config
 from datetime import datetime, timedelta
 
-teamsAccessToken = config.teamsAccessToken
+# Edit .env file to specify optional configuration
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-if teamsAccessToken in ( 'changeme', '' ):
+teamsAccessToken = os.getenv( 'teamsAccessToken' )
+
+if teamsAccessToken == '':
 
     teamsAccessToken = input( 'Enter your Webex Teams access token: ' )
 
     while teamsAccessToken == '':
 
         teamsAccessToken = input( 'Enter your Webex Teams access token: ' )
-else:
 
-    teamsAccessToken = config.teamsAccessToken
+startDate = os.getenv( 'startDate' )
 
-startDate = config.startDate
-
-if startDate in ( 'changeme', '' ):
+if startDate == '':
 
     startDate = input( 'Enter report start date (YYY-MM-DD): ' )
 
@@ -57,9 +58,9 @@ if startDate in ( 'changeme', '' ):
 
             startDate = input( 'Enter report start date (YYY-MM-DD): ' )
 
-endDate = config.endDate
+endDate = os.getenv( 'endDate' )
 
-if endDate in ( 'changeme', '' ):
+if endDate == '':
 
     endDate = input( f'Enter report end date (YYYY-MM-DD). *Enter* to use [{ startDate }]' )
 
@@ -85,18 +86,20 @@ if endDate in ( 'changeme', '' ):
 
                 endDate = input( f'Enter report end date (YYYY-MM-DD). *Enter* to use [{ startDate }]' )
 
-database = 'messages.db' if config.persistDatabase else ':memory:'
+database = 'messages.db' if ( os.getenv( 'persistDatabase') != '' ) else ':memory:'
 
 conn = sqlite3.connect( database )
 
-if ( config.persistDatabase == False ) or ( config.persistDatabase and config.skipDownload == False ):
+conn.row_factory = sqlite3.Row
+
+if ( database == ':memory:' ) or ( database != ':memory:' and os.getenv( 'skipDownload' ) == 'False' ):
 
     data.importData( conn, teamsAccessToken, startDate, endDate )
 
 criteria = {
-    'mentioningMe': config.mentioningMe,
-    'mentioningAll': config.mentioningAll,
-    'directMessage': config.directMessage
+    'mentioningMe': os.getenv( 'mentioningMe' ),
+    'mentioningAll': os.getenv( 'mentioningAll' ),
+    'directMessage': os.getenv( 'directMessage' )
 }
 
 report.generate( conn, teamsAccessToken, startDate, endDate, criteria )

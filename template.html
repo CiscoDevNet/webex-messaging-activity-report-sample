@@ -2,14 +2,39 @@
 
 <head>
     <meta charset="utf-8">
+    <link rel="stylesheet" href="stylesheets/app-58bcd06cc2a0e8bb2478.css">
     <style>
         table {
             width: 100%;
-            text-align: left;
+            table-layout: auto;
         }
-        
-        td {
-            vertical-align: text-top;
+
+        table .absorbing-column {
+            width: 100%;
+        }
+
+        th {
+            padding-left: 0px;
+            font-weight: bold;
+        }
+
+        .meta-data-name {
+            min-width: 150px !important;
+            padding-right: 20px;
+        }
+
+        .meta-data-time {
+            min-width: 75px !important;
+            padding-right: 20px;
+
+        }
+
+        .message-mine {
+            font-weight: bold;
+        }
+
+        .message-cell {
+            display: block;
         }
 
         blockquote {
@@ -17,23 +42,6 @@
             border-left: 4px solid #929596;
             margin: 1em 0 1em .5em;
             padding-left: 30px;
-        }
-
-        .message-content {
-            word-wrap: break-word;
-            white-space: pre-wrap;
-            vertical-align: text-top;
-            font-family: ciscosansttregular,Helvetica Neue,Arial;
-            font-size: 16px;
-        }
-
-        .message-metadata {
-            font-size: 14px;
-            font-family: CiscoSansTT Regular,Helvetica Neue,Arial;
-            line-height: 22px;
-            text-align: left;
-            color: #535759;
-            word-wrap: break-word;
         }
 
         spark-mention[data-object-type = "person"] {
@@ -47,54 +55,23 @@
         spark-mention[data-group-type="all"] {
             color: #0ac391;
         }
-
-        @font-face {
-            font-family: 'ciscosansttbold';
-            src: url('ciscosansttbold-webfont.woff2') format('woff2'),
-                url('ciscosansttbold-webfont.woff') format('woff');
-            font-weight: normal;
-            font-style: normal;
-        }
-
-        @font-face {
-            font-family: 'ciscosansttlight';
-            src: url('ciscosansttlight-webfont.woff2') format('woff2'),
-                url('ciscosansttlight-webfont.woff') format('woff');
-            font-weight: normal;
-            font-style: normal;
-        }
-
-        @font-face {
-            font-family: 'ciscosansttregular';
-            src: url('ciscosansttregular-webfont.woff2') format('woff2'),
-                url('ciscosansttregular-webfont.woff') format('woff');
-            font-weight: normal;
-            font-style: normal;
-        }
     </style>
     <title>Webex Teams Activity Report</title>
 </head>
 
-<body>
+<body id="activities">
     <div class="center-text">
-        <p>
-            <h1>Webex Teams Activity Report: ({{ startDate }} - {{ endDate }})</h1>
-        </p>
+        <h1>Webex Teams Activity Report: ({{ startDate }} - {{ endDate }})</h1>
     </div>
-
+    <div class="activity-list">
     # macro roomIntro( name )
         <h2>{{ name }}</h2>
         <hr>
         <table>
-            <colgroup>
-                <col span="1" style="width: 10%;">
-                <col span="1" style="width: 10%;">
-                <col span="1" style="width: 80%;">
-            </colgroup>
             <tr>
                 <th>Time</th>
                 <th>From</th>
-                <th>Message</th>
+                <th class="absorbing-column">Message</th>
             </tr>
     # endmacro 
     
@@ -108,20 +85,14 @@
 
             # endif 
             
-        {{ roomIntro( row[ 0 ] ) }} 
+        {{ roomIntro( row[ 'roomTitle' ] ) }} 
 
         # endif
 
         <tr>
-            <td class = "message-metadata">{{ renderShortDate( row[ 1 ] ) }}</td>
-            <td class = "message-metadata">{{ renderName( row[ 6 ], row[ 11 ] ) }}</td>
-            <td>
-                <div>
-                    <div>
-                        <div class = "message-content">{{ renderText( row[ 6 ], row[ 5 ], row[ 8 ] ) }}</div>
-                    </div>
-                </div>
-            </td>
+            <td class = "activity-item-sender-meta meta-data-time">{{ renderShortDate( row[ 'created' ] ) }}</td>
+            <td class = "activity-item-sender-meta meta-data-name">{{ renderName( row[ 'personId' ], row[ 'displayName' ] ) }}</td>
+            {{ renderText( row[ 'personId' ], row[ 'text' ], row[ 'html' ], row[ 'parentId' ] ) }}
         </tr>
 
         # if loop.last
@@ -131,6 +102,7 @@
         # endif 
     
     # endfor
+    </div>
 </body>
 
 </html>
