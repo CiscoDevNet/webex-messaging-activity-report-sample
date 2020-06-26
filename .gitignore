@@ -1,5 +1,6 @@
-.vscode/*
-!.vscode/launch.json
+.vscode/settings.json
 __pycache__/
 messages.db
 report.html
+env/
+.env
