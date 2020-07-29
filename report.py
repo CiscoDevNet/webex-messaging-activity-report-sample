@@ -106,15 +106,17 @@ def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
 
         personId = row[ 0 ]
 
+        person = type('', (), {})()
+
+        person.id = personId
+        person.displayNawme = 'Unknown'
+        person.avatar = ''
+
         try:
             person = api.people.get( personId )
 
         except:
-            person = {
-                'id': personId,
-                'displayName': 'Unknown',
-                'avatar': ''
-            }
+            pass
 
         data.append( (
             person.id,
