@@ -26,7 +26,7 @@ from datetime import datetime, timedelta
 # Edit .env file to specify optional configuration
 import os
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv( override = True )
 
 teamsAccessToken = os.getenv( 'teamsAccessToken' )
 
@@ -92,7 +92,7 @@ conn = sqlite3.connect( database )
 
 conn.row_factory = sqlite3.Row
 
-if ( database == ':memory:' ) or ( database != ':memory:' and os.getenv( 'skipDownload' ) == 'False' ):
+if database == ':memory:' or os.getenv( 'skipDownload' ) == 'False':
 
     data.importData( conn, teamsAccessToken, startDate, endDate )
 

@@ -27,7 +27,7 @@ from webexteamssdk import WebexTeamsAPI
 
 def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
 
-    c = conn.cursor()
+    cursor = conn.cursor()
 
     api = WebexTeamsAPI( access_token = teamsAccessToken )
 
@@ -59,11 +59,11 @@ def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
 
         return testDate.astimezone( localTimeZone ).strftime( '%m/%d %H:%M' )
 
-    resp = c.execute( 'SELECT COUNT(*) FROM sqlite_master WHERE type="table" AND name="people"' )
+    resp = cursor.execute( 'SELECT COUNT(*) FROM sqlite_master WHERE type="table" AND name="people"' )
 
     if resp.fetchone()[0] == 0:
 
-        resp = c.execute(
+        resp = cursor.execute(
             '''CREATE TABLE people (
                 id text, 
                 displayName text,
@@ -71,6 +71,8 @@ def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
             )
 
         conn.commit
+
+    print('Retrieving people...', end = '' )
 
     startTime = localTimeZone.localize( datetime.strptime( startDate, '%Y-%m-%d' ) )
     startTime = startTime.astimezone( pytz.timezone( 'UTC' ) ).strftime( '%Y-%m-%dT%H:%M:%S.%f%z' )
@@ -98,11 +100,17 @@ def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
                 { sqlPersonId }
             )'''
         
-    rows = c.execute( query )
+    rows = cursor.execute( query )
 
     data = []
 
+    peopleCount = 0
+
     for row in rows:
+
+        peopleCount += 1
+
+        print( f'\rRetrieving people: {peopleCount}', end='')        
 
         personId = row[ 0 ]
 
@@ -124,9 +132,11 @@ def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
             person.avatar
         ) )
 
-    c.executemany( 'INSERT INTO people VALUES (?,?,?)', data )
+    cursor.executemany( 'INSERT INTO people VALUES (?,?,?)', data )
 
     conn.commit()
+
+    print('\nGenerating report...', end = '' )
 
     query = f'''
     SELECT messages.*, people.displayName, people.avatar
@@ -145,7 +155,7 @@ def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
     ORDER BY messages.roomId, messages.threadCreated, messages.created
     '''
 
-    rows = c.execute( query )
+    rows = cursor.execute( query )
 
     file_loader = FileSystemLoader( '.' )
 
@@ -165,3 +175,6 @@ def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
         outfile.write( html )
 
     webbrowser.open( 'www/report.html' )
+
+    print('\rReport complete     ')
+

@@ -24,17 +24,16 @@ from datetime import datetime, timedelta
 from tzlocal import get_localzone
 import json
 
-
 def importData(conn, teamsAccessToken, startDate, endDate):
 
-    c = conn.cursor()
+    cursor = conn.cursor()
 
-    resp = c.execute(
+    resp = cursor.execute(
         'SELECT COUNT(*) FROM sqlite_master WHERE type="table" AND name="messages"')
 
     if resp.fetchone()[0] == 0:
 
-        resp = c.execute(
+        resp = cursor.execute(
             '''
             CREATE TABLE messages (
                 roomTitle text, 
@@ -57,7 +56,7 @@ def importData(conn, teamsAccessToken, startDate, endDate):
 
     api = WebexTeamsAPI(access_token=teamsAccessToken)
 
-    print('\nRetrieving active spaces...\n')
+    print('\nRetrieving active spaces...')
 
     rooms = api.rooms.list(sortBy='lastactivity')
 
@@ -71,7 +70,7 @@ def importData(conn, teamsAccessToken, startDate, endDate):
     roomCount = 0
     messageCount = 0
 
-    print('\nImporting messages...\n')
+    print('Importing messages (spaces/message)...', end = '')
 
     roomsListRetries = 0
 
@@ -102,7 +101,7 @@ def importData(conn, teamsAccessToken, startDate, endDate):
                     messageCount += 1
 
                     print(
-                        '\rProcessing (spaces/messages): {} / {}'.format(roomCount, messageCount), end='')
+                        f'\rImporting messages (spaces/messages): {roomCount} / {messageCount}', end='')
 
                     mentionedPeople = message.mentionedPeople if hasattr(
                         message, 'mentionedPeople') else None
@@ -131,10 +130,10 @@ def importData(conn, teamsAccessToken, startDate, endDate):
 
                 try:
 
-                    c.executemany(
+                    cursor.executemany(
                         'REPLACE INTO messages VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', data)
 
-                    c.execute('REPLACE INTO messages ' +
+                    cursor.execute('REPLACE INTO messages ' +
                             '(roomTitle,created,id,parentId,roomId,roomType,text,personId,personEmail,html,mentionedPeople,mentionedGroups,threadCreated) ' +
                             'SELECT m2.roomTitle,m2.created,m2.id,m2.parentId,m2.roomId,m2.roomType,m2.text,m2.personId,m2.personEmail,m2.html,m2.mentionedPeople,m2.mentionedGroups,m1.created ' +
                             'FROM messages m1 ' +
@@ -146,12 +145,11 @@ def importData(conn, teamsAccessToken, startDate, endDate):
 
                     print(f'nERROR in SQL REPLACE INTO: { err }')
 
-                    roomsListRetries += 1
-
         except webexteamssdk.ApiError as err:
 
+            roomsListRetries += 1
             print(f'nERROR in rooms.list: { err }')
 
         break
 
-    print('\n\nImport complete\n')
+    print()
