@@ -18,6 +18,10 @@
             font-weight: bold;
         }
 
+        td {
+            vertical-align: top;
+        }
+
         .meta-data-name {
             min-width: 150px !important;
             padding-right: 20px;
@@ -35,6 +39,10 @@
 
         .message-cell {
             display: block;
+            border-radius: 10px;
+            background: #F5F5F5;
+            padding: 5;
+            margin: 2;
         }
 
         blockquote {
@@ -44,7 +52,7 @@
             padding-left: 30px;
         }
 
-        spark-mention[data-object-type = "person"] {
+        spark-mention[data-object-type="person"] {
             color: #929596;
         }
 
@@ -64,7 +72,7 @@
         <h1>Webex Teams Activity Report: ({{ startDate }} - {{ endDate }})</h1>
     </div>
     <div class="activity-list">
-    # macro roomIntro( name )
+        # macro roomIntro( name )
         <h2>{{ name }}</h2>
         <hr>
         <table>
@@ -73,35 +81,36 @@
                 <th>From</th>
                 <th class="absorbing-column">Message</th>
             </tr>
-    # endmacro 
-    
-    # for row in rows: 
-    
-        # if loop.changed( row[ 0 ] ) 
-        
+            # endmacro
+
+            # for row in rows:
+
+            # if loop.changed( row[ 0 ] )
+
             # if not loop.first
 
-                </table>
+        </table>
 
-            # endif 
-            
-        {{ roomIntro( row[ 'roomTitle' ] ) }} 
+        # endif
+
+        {{ roomIntro( row[ 'roomTitle' ] ) }}
 
         # endif
 
         <tr>
-            <td class = "activity-item-sender-meta meta-data-time">{{ renderShortDate( row[ 'created' ] ) }}</td>
-            <td class = "activity-item-sender-meta meta-data-name">{{ renderName( row[ 'personId' ], row[ 'displayName' ] ) }}</td>
+            <td class="activity-item-sender-meta meta-data-time">{{ renderShortDate( row[ 'created' ] ) }}</td>
+            <td class="activity-item-sender-meta meta-data-name">{{ renderName( row[ 'personId' ], row[ 'displayName' ]
+                ) }}</td>
             {{ renderText( row[ 'personId' ], row[ 'text' ], row[ 'html' ], row[ 'parentId' ] ) }}
         </tr>
 
         # if loop.last
 
-            </table>
+        </table>
 
-        # endif 
-    
-    # endfor
+        # endif
+
+        # endfor
     </div>
 </body>
 

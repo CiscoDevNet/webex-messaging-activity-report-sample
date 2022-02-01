@@ -114,23 +114,14 @@ def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
 
         personId = row[ 0 ]
 
-        person = type('', (), {})()
-
-        person.id = personId
-        person.displayNawme = 'Unknown'
-        person.avatar = ''
-
         try:
             person = api.people.get( personId )
-
+            data.append( ( person.id,
+                person.displayName if bool(person.displayName) else 'Unknown',
+                person.avatar if bool(person.avatar) else None ) )
         except:
+            data.append( ( personId, 'Unknown', None ) )
             pass
-
-        data.append( (
-            person.id,
-            person.displayName,
-            person.avatar
-        ) )
 
     cursor.executemany( 'INSERT INTO people VALUES (?,?,?)', data )
 
