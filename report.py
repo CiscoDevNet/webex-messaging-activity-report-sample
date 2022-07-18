@@ -20,9 +20,8 @@
 from jinja2 import Environment, FileSystemLoader
 import sqlite3
 import webbrowser
-from datetime import datetime, timedelta, timezone
-from tzlocal import get_localzone
-import pytz
+from datetime import datetime, timedelta
+import zoneinfo
 from webexteamssdk import WebexTeamsAPI
 
 def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
@@ -32,8 +31,6 @@ def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
     api = WebexTeamsAPI( access_token = teamsAccessToken )
 
     teamsId = api.people.me().id
-
-    localTimeZone = get_localzone()
 
     def renderName( id, displayName ):
 
@@ -57,7 +54,7 @@ def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
 
         testDate = datetime.strptime( timeStr, '%Y-%m-%dT%H:%M:%S.%f%z' )
 
-        return testDate.astimezone( localTimeZone ).strftime( '%m/%d %H:%M' )
+        return testDate.astimezone().strftime( '%m/%d %H:%M' )
 
     resp = cursor.execute( 'SELECT COUNT(*) FROM sqlite_master WHERE type="table" AND name="people"' )
 
@@ -74,10 +71,10 @@ def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
 
     print('Retrieving people...', end = '' )
 
-    startTime = localTimeZone.localize( datetime.strptime( startDate, '%Y-%m-%d' ) )
-    startTime = startTime.astimezone( pytz.timezone( 'UTC' ) ).strftime( '%Y-%m-%dT%H:%M:%S.%f%z' )
-    endTime = localTimeZone.localize( datetime.strptime( endDate, '%Y-%m-%d' ) + timedelta( days = 1 ) )
-    endTime = endTime.astimezone( pytz.timezone( 'UTC' ) ).strftime( '%Y-%m-%dT%H:%M:%S.%f%z' )
+    startTime = ( datetime.strptime( startDate, '%Y-%m-%d' ) ).astimezone( zoneinfo.ZoneInfo( 'UTC' ) )
+    startTime = startTime.strftime( '%Y-%m-%dT%H:%M:%S.%f%z' )
+    endTime = ( datetime.strptime( endDate, '%Y-%m-%d' ) + timedelta( days = 1 ) ).astimezone( zoneinfo.ZoneInfo( 'UTC' ) )
+    endTime = endTime.strftime( '%Y-%m-%dT%H:%M:%S.%f%z' )
     
     sqlMentioningMe = f'mentionedPeople like "%{ teamsId }%" OR' if criteria[ 'mentioningMe' ] else ''
     sqlMentioningAll = 'mentionedGroups = \'["all"]\' OR' if criteria[ 'mentioningAll' ] else ''

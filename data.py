@@ -21,7 +21,6 @@ import sqlite3
 import webexteamssdk
 from webexteamssdk import WebexTeamsAPI
 from datetime import datetime, timedelta
-from tzlocal import get_localzone
 import json
 
 def importData(conn, teamsAccessToken, startDate, endDate):
@@ -59,13 +58,8 @@ def importData(conn, teamsAccessToken, startDate, endDate):
     print('\nRetrieving active spaces...')
 
     rooms = api.rooms.list(sortBy='lastactivity')
-
-    localTimeZone = get_localzone()
-
-    startTime = localTimeZone.localize(
-        datetime.strptime(startDate, '%Y-%m-%d'))
-    endTime = localTimeZone.localize(datetime.strptime(
-        endDate, '%Y-%m-%d') + timedelta(days=1))
+    startTime = (datetime.strptime(startDate, '%Y-%m-%d')).astimezone()
+    endTime = (datetime.strptime(endDate, '%Y-%m-%d') + timedelta(days=1)).astimezone()
 
     roomCount = 0
     messageCount = 0
