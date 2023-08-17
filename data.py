@@ -58,13 +58,13 @@ def importData(conn, teamsAccessToken, startDate, endDate):
     print('\nRetrieving active spaces...')
 
     rooms = api.rooms.list(sortBy='lastactivity')
-    startTime = (datetime.strptime(startDate, '%Y-%m-%d')).astimezone()
-    endTime = (datetime.strptime(endDate, '%Y-%m-%d') + timedelta(days=1)).astimezone()
+    startTime = (datetime.strptime(startDate, '%Y/%m/%d')).astimezone()
+    endTime = (datetime.strptime(endDate, '%Y/%m/%d') + timedelta(days=1)).astimezone()
 
     roomCount = 0
     messageCount = 0
 
-    print('Importing messages (spaces/message)...', end = '')
+    print('Importing messages (spaces / message)...', end = '')
 
     roomsListRetries = 0
 

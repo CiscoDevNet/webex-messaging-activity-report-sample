@@ -42,7 +42,7 @@ startDate = os.getenv( 'startDate' )
 
 if startDate == '':
 
-    startDate = input( 'Enter report start date (YYY-MM-DD): ' )
+    startDate = input( 'Enter report start date (YYY/MM/DD): ' )
 
     invalid = True
 
@@ -50,19 +50,19 @@ if startDate == '':
 
         try:
 
-            test = datetime.strptime( startDate, '%Y-%m-%d' )
+            test = datetime.strptime( startDate, '%Y/%m/%d' )
 
             invalid = False
 
         except:
 
-            startDate = input( 'Enter report start date (YYY-MM-DD): ' )
+            startDate = input( 'Enter report start date (YYY/MM/DD): ' )
 
 endDate = os.getenv( 'endDate' )
 
 if endDate == '':
 
-    endDate = input( f'Enter report end date (YYYY-MM-DD). *Enter* to use [{ startDate }]' )
+    endDate = input( f'Enter report end date (YYYY/MM/DD). *Enter* to use [{ startDate }]' )
 
     invalid = True
     
@@ -78,13 +78,13 @@ if endDate == '':
 
             try:
 
-                test = datetime.strptime( endDate, '%Y-%m-%d' )
+                test = datetime.strptime( endDate, '%Y/%m/%d' )
 
                 invalid = False
 
             except:
 
-                endDate = input( f'Enter report end date (YYYY-MM-DD). *Enter* to use [{ startDate }]' )
+                endDate = input( f'Enter report end date (YYYY/MM/DD). *Enter* to use [{ startDate }]' )
 
 database = 'messages.db' if ( os.getenv( 'persistDatabase') != '' ) else ':memory:'
 

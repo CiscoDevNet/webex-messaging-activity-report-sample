@@ -22,6 +22,12 @@
             vertical-align: top;
         }
 
+        .mention-row {
+            /* outline-style: solid;
+            outline-color: rgba(100, 180, 250, 0.3); */
+            background-color: rgba(100, 180, 250, 0.3);
+        }
+
         .meta-data-name {
             min-width: 150px !important;
             padding-right: 20px;
@@ -63,6 +69,10 @@
         spark-mention[data-group-type="all"] {
             color: #0ac391;
         }
+
+        summary {
+            font-size: 24px;
+        }
     </style>
     <title>Webex Teams Activity Report</title>
 </head>
@@ -73,42 +83,45 @@
     </div>
     <div class="activity-list">
         # macro roomIntro( name )
-        <h2>{{ name }}</h2>
-        <hr>
-        <table>
-            <tr>
-                <th>Time</th>
-                <th>From</th>
-                <th class="absorbing-column">Message</th>
-            </tr>
-            # endmacro
+            <details>
+                <summary>{{ name }}</summary>
+                <hr>
+                <table>
+                    <tr>
+                        <th>Time</th>
+                        <th>From</th>
+                        <th class="absorbing-column">Message</th>
+                    </tr>
+        # endmacro
 
-            # for row in rows:
+        # for row in rows:
 
             # if loop.changed( row[ 0 ] )
 
-            # if not loop.first
+                # if not loop.first
 
-        </table>
+                        </table>
+                    </details>
 
-        # endif
+                # endif
 
-        {{ roomIntro( row[ 'roomTitle' ] ) }}
+                {{ roomIntro( row[ 'roomTitle' ] ) }}
 
-        # endif
+            # endif
 
-        <tr>
-            <td class="activity-item-sender-meta meta-data-time">{{ renderShortDate( row[ 'created' ] ) }}</td>
-            <td class="activity-item-sender-meta meta-data-name">{{ renderName( row[ 'personId' ], row[ 'displayName' ]
-                ) }}</td>
-            {{ renderText( row[ 'personId' ], row[ 'text' ], row[ 'html' ], row[ 'parentId' ] ) }}
-        </tr>
+                {{ renderRow( row[ 'personId' ] ) }}
+                    <td class="activity-item-sender-meta meta-data-time">{{ renderShortDate( row[ 'created' ] ) }}</td>
+                    <td class="activity-item-sender-meta meta-data-name">{{ renderName( row[ 'personId' ], row[ 'displayName' ]
+                        ) }}</td>
+                    {{ renderText( row[ 'personId' ], row[ 'text' ], row[ 'html' ], row[ 'parentId' ] ) }}
+                </tr>
 
-        # if loop.last
+            # if loop.last
 
-        </table>
+                    </table>
+                </details>
 
-        # endif
+            # endif
 
         # endfor
     </div>

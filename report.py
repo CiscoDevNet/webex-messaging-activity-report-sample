@@ -36,6 +36,10 @@ def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
 
         return '<b>You</b>' if id == teamsId else displayName
 
+    def renderRow( id ):
+
+        return '<tr class="mention-row">' if id == teamsId else '<tr>'
+
     def renderText( id, text, html, parentId ):
 
         cssClass = 'activity-item--message'
@@ -71,9 +75,9 @@ def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
 
     print('Retrieving people...', end = '' )
 
-    startTime = ( datetime.strptime( startDate, '%Y-%m-%d' ) ).astimezone( zoneinfo.ZoneInfo( 'UTC' ) )
+    startTime = ( datetime.strptime( startDate, '%Y/%m/%d' ) ).astimezone( zoneinfo.ZoneInfo( 'UTC' ) )
     startTime = startTime.strftime( '%Y-%m-%dT%H:%M:%S.%f%z' )
-    endTime = ( datetime.strptime( endDate, '%Y-%m-%d' ) + timedelta( days = 1 ) ).astimezone( zoneinfo.ZoneInfo( 'UTC' ) )
+    endTime = ( datetime.strptime( endDate, '%Y/%m/%d' ) + timedelta( days = 1 ) ).astimezone( zoneinfo.ZoneInfo( 'UTC' ) )
     endTime = endTime.strftime( '%Y-%m-%dT%H:%M:%S.%f%z' )
     
     sqlMentioningMe = f'mentionedPeople like "%{ teamsId }%" OR' if criteria[ 'mentioningMe' ] else ''
@@ -155,7 +159,8 @@ def generate( conn, teamsAccessToken, startDate, endDate, criteria ):
             rows = rows,
             renderShortDate = renderShortDate,
             renderName = renderName,
-            renderText = renderText
+            renderText = renderText,
+            renderRow = renderRow
         )
 
     with open( 'www/report.html', 'w', encoding = 'utf-8' ) as outfile:
