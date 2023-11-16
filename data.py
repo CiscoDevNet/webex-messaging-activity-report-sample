@@ -1,4 +1,4 @@
-# webex-teams-activity-report-sample
+# webex-messaging-activity-report-sample
 
 # Copyright (c) 2019 Cisco and/or its affiliates.
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,17 +23,17 @@ from webexteamssdk import WebexTeamsAPI
 from datetime import datetime, timedelta
 import json
 
-def importData(conn, teamsAccessToken, startDate, endDate):
 
+def importData(conn, webexAccessToken, startDate, endDate):
     cursor = conn.cursor()
 
     resp = cursor.execute(
-        'SELECT COUNT(*) FROM sqlite_master WHERE type="table" AND name="messages"')
+        'SELECT COUNT(*) FROM sqlite_master WHERE type="table" AND name="messages"'
+    )
 
     if resp.fetchone()[0] == 0:
-
         resp = cursor.execute(
-            '''
+            """
             CREATE TABLE messages (
                 roomTitle text, 
                 created text, 
@@ -48,44 +48,41 @@ def importData(conn, teamsAccessToken, startDate, endDate):
                 mentionedPeople text,
                 mentionedGroups text,
                 threadCreated text )
-            '''
+            """
         )
 
         conn.commit
 
-    api = WebexTeamsAPI(access_token=teamsAccessToken)
+    api = WebexTeamsAPI(access_token=webexAccessToken)
 
-    print('\nRetrieving active spaces...')
+    print("\nRetrieving active spaces...")
 
-    rooms = api.rooms.list(sortBy='lastactivity')
-    startTime = (datetime.strptime(startDate, '%Y/%m/%d')).astimezone()
-    endTime = (datetime.strptime(endDate, '%Y/%m/%d') + timedelta(days=1)).astimezone()
+    rooms = api.rooms.list(sortBy="lastactivity")
+    startTime = (datetime.strptime(startDate, "%Y/%m/%d")).astimezone()
+    endTime = (datetime.strptime(endDate, "%Y/%m/%d") + timedelta(days=1)).astimezone()
 
     roomCount = 0
     messageCount = 0
 
-    print('Importing messages (spaces / message)...', end = '')
+    print("Importing messages (spaces/message)...", end="")
 
     roomsListRetries = 0
 
     while roomsListRetries < 2:
-
         try:
-
             for room in rooms:
-
                 if room.lastActivity < startTime:
                     break
 
                 roomCount += 1
 
                 messages = api.messages.list(
-                    roomId=room.id, before=endTime.strftime('%Y-%m-%dT%H:%M:%S.%f%z'))
+                    roomId=room.id, before=endTime.strftime("%Y-%m-%dT%H:%M:%S.%f%z")
+                )
 
                 data = []
 
                 for message in messages:
-
                     if message.created < startTime:
                         break
 
@@ -95,54 +92,67 @@ def importData(conn, teamsAccessToken, startDate, endDate):
                     messageCount += 1
 
                     print(
-                        f'\rImporting messages (spaces/messages): {roomCount} / {messageCount}', end='')
+                        f"\rImporting messages (spaces/messages): {roomCount}/{messageCount}",
+                        end="",
+                    )
 
-                    mentionedPeople = message.mentionedPeople if hasattr(
-                        message, 'mentionedPeople') else None
-                    mentionedGroups = message.mentionedGroups if hasattr(
-                        message, 'mentionedGroups') else None
-                    parentId = message.json_data['parentId'] if (
-                        'parentId' in message.json_data.keys()) else None
-                    messageCreated = message.created.strftime('%Y-%m-%dT%H:%M:%S.%f%z')
+                    mentionedPeople = (
+                        message.mentionedPeople
+                        if hasattr(message, "mentionedPeople")
+                        else None
+                    )
+                    mentionedGroups = (
+                        message.mentionedGroups
+                        if hasattr(message, "mentionedGroups")
+                        else None
+                    )
+                    parentId = (
+                        message.json_data["parentId"]
+                        if ("parentId" in message.json_data.keys())
+                        else None
+                    )
+                    messageCreated = message.created.strftime("%Y-%m-%dT%H:%M:%S.%f%z")
                     threadCreated = messageCreated if parentId is None else None
 
-                    data.append((
-                        room.title,
-                        messageCreated,
-                        message.id,
-                        parentId,
-                        message.roomId,
-                        message.roomType,
-                        message.text,
-                        message.personId,
-                        message.personEmail,
-                        message.html,
-                        json.dumps(mentionedPeople),
-                        json.dumps(mentionedGroups),
-                        threadCreated
-                    ))
+                    data.append(
+                        (
+                            room.title,
+                            messageCreated,
+                            message.id,
+                            parentId,
+                            message.roomId,
+                            message.roomType,
+                            message.text,
+                            message.personId,
+                            message.personEmail,
+                            message.html,
+                            json.dumps(mentionedPeople),
+                            json.dumps(mentionedGroups),
+                            threadCreated,
+                        )
+                    )
 
                 try:
-
                     cursor.executemany(
-                        'REPLACE INTO messages VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', data)
+                        "REPLACE INTO messages VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", data
+                    )
 
-                    cursor.execute('REPLACE INTO messages ' +
-                            '(roomTitle,created,id,parentId,roomId,roomType,text,personId,personEmail,html,mentionedPeople,mentionedGroups,threadCreated) ' +
-                            'SELECT m2.roomTitle,m2.created,m2.id,m2.parentId,m2.roomId,m2.roomType,m2.text,m2.personId,m2.personEmail,m2.html,m2.mentionedPeople,m2.mentionedGroups,m1.created ' +
-                            'FROM messages m1 ' +
-                            'INNER JOIN messages m2 ON m1.id = m2.parentId')
+                    cursor.execute(
+                        "REPLACE INTO messages "
+                        + "(roomTitle,created,id,parentId,roomId,roomType,text,personId,personEmail,html,mentionedPeople,mentionedGroups,threadCreated) "
+                        + "SELECT m2.roomTitle,m2.created,m2.id,m2.parentId,m2.roomId,m2.roomType,m2.text,m2.personId,m2.personEmail,m2.html,m2.mentionedPeople,m2.mentionedGroups,m1.created "
+                        + "FROM messages m1 "
+                        + "INNER JOIN messages m2 ON m1.id = m2.parentId"
+                    )
 
                     conn.commit()
 
                 except Exception as err:
-
-                    print(f'nERROR in SQL REPLACE INTO: { err }')
+                    print(f"nERROR in SQL REPLACE INTO: { err }")
 
         except webexteamssdk.ApiError as err:
-
             roomsListRetries += 1
-            print(f'nERROR in rooms.list: { err }')
+            print(f"nERROR in rooms.list: { err }")
 
         break
 

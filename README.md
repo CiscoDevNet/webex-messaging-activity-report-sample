@@ -1,22 +1,22 @@
-# webex-teams-activity-report-sample
+# webex-messaging-activity-report-sample
 
 ## Overview
 
-Produces a HTML report detailing user-related activity in Webex Teams for a given date range.
+Produces a HTML report detailing user-related activity in Webex messaging for a given date range.
 
-The user can input a Webex Teams access token, start-, and end-dates.  The application will download messages from all rooms where the user was active - based on sent messages, @mentions, @all mentions or direct messages - then compile
+The user can input a Webex access token, start-, and end-dates.  The application will download messages from all rooms where the user was active - based on sent messages, @mentions, @all mentions or direct messages - then compile
 an HTML report providing a readout of the rooms and their messages for the requested period.
 
 Features:
 
 * Message and user data can optionally be persisted (via SQLite)
-* Message formatting/CSS is similar to the Webex Teams web client
+* Message formatting/CSS is similar to the Webex web client
 * Configurable room/message selection criteria
 * Time zone aware
 
 Uses the following components/technologies:
 
-* [WebexTeamsSDK Python library](https://github.com/CiscoDevNet/webexteamssdk) for Teams data retrieval
+* [WebexTeamsSDK Python library](https://github.com/WebexCommunity/WebexPythonSDK) for messaging data retrieval.
 
 * [Jinja2](https://jinja.palletsprojects.com/en/2.10.x/) for HTML report templating
 
@@ -45,13 +45,13 @@ Tested using:
 * Clone this repo to a directory on your PC:
 
     ```bash
-    git clone https://github.com/CiscoDevNet/webex-teams-activity-report-sample.git
+    git clone https://github.com/CiscoDevNet/webex-messaging-activity-report-sample.git
     ```
 
 * Dependency Installation:
 
     ```bash
-    cd webex-teams-activity-report-sample
+    cd webex-messaging-activity-report-sample
     pip3 install -r requirements.txt
     ```
   

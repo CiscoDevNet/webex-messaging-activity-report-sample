@@ -5,10 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "teamsActivityReport",
+            "name": "Launch Webex Messaging Activity Report",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/teamsActivityReport.py",
+            "program": "${workspaceFolder}/webex_messaging_activity_report.py",
             "console": "integratedTerminal"
         }
     ]

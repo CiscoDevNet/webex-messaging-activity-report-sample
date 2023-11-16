@@ -1,4 +1,4 @@
-# webex-teams-activity-report-sample 
+# webex-messaging-activity-report-sample
 
 # Copyright (c) 2019 Cisco and/or its affiliates.
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,80 +26,72 @@ from datetime import datetime, timedelta
 # Edit .env file to specify optional configuration
 import os
 from dotenv import load_dotenv
-load_dotenv( override = True )
 
-teamsAccessToken = os.getenv( 'teamsAccessToken' )
+load_dotenv(override=True)
 
-if teamsAccessToken == '':
+webexAccessToken = os.getenv("webexAccessToken")
 
-    teamsAccessToken = input( 'Enter your Webex Teams access token: ' )
+if webexAccessToken == "":
+    webexAccessToken = input("Enter your Webex access token: ")
 
-    while teamsAccessToken == '':
+    while webexAccessToken == "":
+        webexAccessToken = input("Enter your Webex access token: ")
 
-        teamsAccessToken = input( 'Enter your Webex Teams access token: ' )
+startDate = os.getenv("startDate")
 
-startDate = os.getenv( 'startDate' )
-
-if startDate == '':
-
-    startDate = input( 'Enter report start date (YYY/MM/DD): ' )
+if startDate == "":
+    startDate = input("Enter report start date (YYY/MM/DD): ")
 
     invalid = True
 
     while invalid:
-
         try:
-
-            test = datetime.strptime( startDate, '%Y/%m/%d' )
+            test = datetime.strptime(startDate, "%Y/%m/%d")
 
             invalid = False
 
         except:
+            startDate = input("Enter report start date (YYY/MM/DD): ")
 
-            startDate = input( 'Enter report start date (YYY/MM/DD): ' )
+endDate = os.getenv("endDate")
 
-endDate = os.getenv( 'endDate' )
-
-if endDate == '':
-
-    endDate = input( f'Enter report end date (YYYY/MM/DD). *Enter* to use [{ startDate }]' )
+if endDate == "":
+    endDate = input(
+        f"Enter report end date (YYYY/MM/DD). *Enter* to use [{ startDate }]"
+    )
 
     invalid = True
-    
+
     while invalid:
-
-        if endDate == '':
-
+        if endDate == "":
             endDate = startDate
 
             invalid = False
 
         else:
-
             try:
-
-                test = datetime.strptime( endDate, '%Y/%m/%d' )
+                test = datetime.strptime(endDate, "%Y/%m/%d")
 
                 invalid = False
 
             except:
+                endDate = input(
+                    f"Enter report end date (YYYY/MM/DD). *Enter* to use [{ startDate }]"
+                )
 
-                endDate = input( f'Enter report end date (YYYY/MM/DD). *Enter* to use [{ startDate }]' )
+database = "messages.db" if (os.getenv("persistDatabase") != "") else ":memory:"
 
-database = 'messages.db' if ( os.getenv( 'persistDatabase') != '' ) else ':memory:'
-
-conn = sqlite3.connect( database )
+conn = sqlite3.connect(database)
 
 conn.row_factory = sqlite3.Row
 
-if database == ':memory:' or os.getenv( 'skipDownload' ) == 'False':
-
-    data.importData( conn, teamsAccessToken, startDate, endDate )
+if database == ":memory:" or os.getenv("skipDownload") == "False":
+    data.importData(conn, webexAccessToken, startDate, endDate)
 
 criteria = {
-    'mentioningMe': os.getenv( 'mentioningMe' ),
-    'mentioningAll': os.getenv( 'mentioningAll' ),
-    'directMessage': os.getenv( 'directMessage' )
+    "mentioningMe": os.getenv("mentioningMe"),
+    "mentioningAll": os.getenv("mentioningAll"),
+    "directMessage": os.getenv("directMessage"),
 }
 
-report.generate( conn, teamsAccessToken, startDate, endDate, criteria )
+report.generate(conn, webexAccessToken, startDate, endDate, criteria)
