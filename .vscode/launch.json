@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Launch Webex Messaging Activity Report",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/webex_messaging_activity_report.py",
             "console": "integratedTerminal"

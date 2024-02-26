@@ -22,6 +22,11 @@ import sqlite3
 import data
 import report
 from datetime import datetime, timedelta
+from uuid import uuid4
+import re
+from urllib import parse
+import requests
+from requests.auth import HTTPBasicAuth
 
 # Edit .env file to specify optional configuration
 import os
@@ -29,55 +34,79 @@ from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
-webexAccessToken = os.getenv("webexAccessToken")
-
+webexAccessToken = os.getenv("webexAccessToken", "")
 if webexAccessToken == "":
-    webexAccessToken = input("Enter your Webex access token: ")
+    webexClientId = os.getenv("webexClientId")
+    webexClientSecret = os.getenv("webexClientSecret")
+    webexRedirectUri = os.getenv("webexRedirectUri")
 
-    while webexAccessToken == "":
-        webexAccessToken = input("Enter your Webex access token: ")
-
-startDate = os.getenv("startDate")
-
-if startDate == "":
-    startDate = input("Enter report start date (YYY/MM/DD): ")
-
-    invalid = True
-
-    while invalid:
+    if webexClientId and webexClientSecret and webexRedirectUri:
+        state = str(uuid4())
+        oauth2Url = ("https://webexapis.com/v1/authorize?"
+            f"client_id={webexClientId}&"
+            "response_type=code&"
+            f"redirect_uri={parse.quote_plus(webexRedirectUri)}&"
+            "scope=spark%3Akms%20spark%3Apeople_read%20spark%3Arooms_read%20spark%3Amessages_read&"
+            f"state={state}"
+        )
+        code = ""
+        while code == "":
+            print(f"\nOAuth2 login URL: {oauth2Url}")
+            codeUrl = input("\nEnter full response URL from the browser: ")
+            match = re.search(r"\?.*code=(.*)\&", codeUrl)
+            if match is None:
+                print("\nURL provided does not include '?code='")
+                exit(1)
+            else:
+                code = match.group(1)
+        match = re.search(r".*?state=(.*)", codeUrl)
+        if (match is None) or (match.group(1) != state) :
+            print("\nRequest/response 'state' value mismatch")
+            exit(1)
         try:
-            test = datetime.strptime(startDate, "%Y/%m/%d")
+            resp = requests.post(
+                "https://webexapis.com/v1/access_token",
+                headers = {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Accept": "application/json"
+                },
+                auth = ( webexClientId, webexClientSecret),
+                data = {
+                    "grant_type": "authorization_code",
+                    "code": code,
+                    "redirect_uri": webexRedirectUri
+                }
+            )
+            resp.raise_for_status()
+            webexAccessToken = resp.json()["access_token"]
+        except Exception as e:
+                print(f"Error requesting access token: {e}\nExiting...")
+                exit(1)
+    else:            
+        while webexAccessToken == "":
+            webexAccessToken = input("Enter your Webex access token: ")
 
-            invalid = False
+startDate = os.getenv("startDate", "")
+date_valid = False
+while not date_valid:
+    while startDate == "":
+        startDate = input("Enter report start date (YYY/MM/DD): ")
+    try:
+        datetime.strptime(startDate, "%Y/%m/%d")
+        date_valid = True
+    except:
+        startDate = ""
+        pass
 
-        except:
-            startDate = input("Enter report start date (YYY/MM/DD): ")
-
-endDate = os.getenv("endDate")
-
-if endDate == "":
-    endDate = input(
-        f"Enter report end date (YYYY/MM/DD). *Enter* to use [{ startDate }]"
-    )
-
-    invalid = True
-
-    while invalid:
-        if endDate == "":
-            endDate = startDate
-
-            invalid = False
-
-        else:
-            try:
-                test = datetime.strptime(endDate, "%Y/%m/%d")
-
-                invalid = False
-
-            except:
-                endDate = input(
-                    f"Enter report end date (YYYY/MM/DD). *Enter* to use [{ startDate }]"
-                )
+endDate = os.getenv("endDate", "")
+date_valid = False
+while not date_valid:
+    try:
+        datetime.strptime(endDate, "%Y/%m/%d")
+        date_valid = True
+    except:
+        endDate = input(f"Enter report end date (YYYY/MM/DD). *Enter* to use [{ startDate }]: ")
+        endDate = startDate if endDate == "" else endDate
 
 database = "messages.db" if (os.getenv("persistDatabase") != "") else ":memory:"
 
