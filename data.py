@@ -64,7 +64,7 @@ def importData(conn, webexAccessToken, startDate, endDate):
     roomCount = 0
     messageCount = 0
 
-    print("Importing messages (spaces/message)...", end="")
+    print("Importing messages (spaces/messages)...", end="")
 
     roomsListRetries = 0
 
