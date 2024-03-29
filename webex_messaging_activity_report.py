@@ -90,7 +90,7 @@ startDate = os.getenv("startDate", "")
 date_valid = False
 while not date_valid:
     while startDate == "":
-        startDate = input("Enter report start date (YYY/MM/DD): ")
+        startDate = input("Enter report start date (YYYY/MM/DD): ")
     try:
         datetime.strptime(startDate, "%Y/%m/%d")
         date_valid = True

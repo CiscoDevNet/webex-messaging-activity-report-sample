@@ -61,12 +61,20 @@ Tested using:
     code .
     ```
 
-* Visit [http://developer.webex.com](https://developer.webex.com/docs/api/getting-started), login, navigate to **Documentation** / **Getting Started** and copy your personal access token
+* Visit [http://developer.webex.com](https://developer.webex.com/docs/api/getting-started), login, navigate to **Documentation** / **Getting Started** and copy your personal access token.
+
+  or
+
+  Create a Webex integration.  Use `https://localhost` as the redirect URL.
+
+
 
 * In Visual Studio Code:
 
-    * **OPTIONAL** - edit `config.py` to set credentials and preferences (be sure to save)
+    * Rename file `.env.example` to `.env`
 
+      Edit to configure credentials/settings.
+      
     * Press **F5** to run the application
 
     * Enter your access token and start/end dates
